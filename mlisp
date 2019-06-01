@@ -1,0 +1,35 @@
+(* Guy Sadoun sadoun@campus.technion.ac.il *)
+(* Boaz Moav BoazMoav@campus.technion.ac.il *)
+
+local
+    fun bifnocho [] _ = []
+      | bifnocho ("("::xs) n = ["("]@bifnocho xs (n+1)
+      | bifnocho (")"::xs) 1 = []
+      | bifnocho (")"::xs) n = [")"]@bifnocho xs (n-1)
+      | bifnocho (x::xs) n = [x]@bifnocho xs n;
+    
+    fun maker [] = ([],[])
+      | maker ("("::xs) =
+            let
+                val part1 = bifnocho xs 1;
+                val part2 = List.drop (xs, (List.length part1) +1);
+            in
+                (part1,part2)
+            end
+      | maker (x::xs) = ([x],xs);
+      
+    fun toAtom x = if (isNumber x) then ATOM(NUMBER(atoi x)) else ATOM(SYMBOL(x));
+    
+    fun miniparse [] = ATOM(NIL)
+      | miniparse list = 
+        let
+            val (part1,part2) = (maker list);
+            val len1 = List.length part1;
+        in
+            if len1 = 1 then CONS(toAtom (List.hd part1),miniparse part2)
+            else CONS((miniparse part1,miniparse part2))
+        end
+in
+    fun parse [] = ATOM(NIL)
+      | parse list = miniparse (#1(maker list));
+end;
